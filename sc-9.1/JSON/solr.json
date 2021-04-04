@@ -1,0 +1,73 @@
+{
+    "Parameters": {
+        "SolrUrl": {
+            "Type": "String",
+            "DefaultValue": "https://localhost:8983/solr",
+            "Description": "The Solr instance to use."
+        },
+        "SolrRoot": {
+            "Type": "String",
+            "DefaultValue": "C:\\solr-7.2.1",
+            "Description": "The file path to the Solr instance."
+        },
+        "SolrService": {
+            "Type": "String",
+            "DefaultValue": "Solr-7.2.1",
+            "Description": "The name of the Solr service."
+        },
+        "Prefix": {
+            "Type": "String",
+            "DefaultValue": "SC910",
+            "Description": "The prefix for uniquely identifying instances."
+        },
+        "XConnectSolr:SolrUrl": {
+            "Type": "String",
+            "Reference": "SolrUrl",
+            "Description": "Override to pass SolrUrl value to XConnectSolr config."
+        },
+        "XConnectSolr:SolrRoot": {
+            "Type": "String",
+            "Reference": "SolrRoot",
+            "Description": "Override to pass SolrRoot value to XConnectSolr config."
+        },
+        "XConnectSolr:SolrService": {
+            "Type": "String",
+            "Reference": "SolrService",
+            "Description": "Override to pass SolrService value to XConnectSolr config."
+        },
+        "XConnectSolr:CorePrefix": {
+            "Type": "String",
+            "Reference": "Prefix",
+            "Description": "Override to pass Prefix value to XConnectSolr config."
+        },
+        "SitecoreSolr:SolrUrl": {
+            "Type": "String",
+            "Reference": "SolrUrl",
+            "Description": "Override to pass SolrUrl value to SitecoreSolr config."
+        },
+        "SitecoreSolr:SolrRoot": {
+            "Type": "String",
+            "Reference": "SolrRoot",
+            "Description": "Override to pass SolrRoot value to SitecoreSolr config."
+        },
+        "SitecoreSolr:SolrService": {
+            "Type": "String",
+            "Reference": "SolrService",
+            "Description": "Override to pass SolrService value to SitecoreSolr config."
+        },
+        "SitecoreSolr:CorePrefix": {
+            "Type": "String",
+            "Reference": "Prefix",
+            "Description": "Override to pass Prefix value to SitecoreSolr config."
+        }
+    },
+    "Variables": {},
+    "Includes": {
+        "XConnectSolr": {
+            "Source": ".\\JSON\\xconnect-solr.json"
+        },
+        "SitecoreSolr": {
+            "Source": ".\\JSON\\Sitecore-solr.json"
+        }
+    }
+}

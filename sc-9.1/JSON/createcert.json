@@ -1,0 +1,365 @@
+{
+    "Parameters": {
+        "Solr": {
+            "Type": "String",
+            "Description": "The name of the certificate to be created.",
+            "DefaultValue": "solr"
+        },
+        "ContentDeliverySiteName": {
+            "Type": "String",
+            "Description": "The name of the certificate to be created.",
+            "DefaultValue": "sc91cm"
+        },
+        "ContentManagementSiteName": {
+            "Type": "String",
+            "Description": "The name of the certificate to be created.",
+            "DefaultValue": "sc91cd"
+        },
+        "ReportingSiteName": {
+            "Type": "String",
+            "Description": "The name of the certificate to be created.",
+            "DefaultValue": "sc91identity"
+        },
+        "ProcessingSiteName": {
+            "Type": "String",
+            "Description": "The name of the certificate to be created.",
+            "DefaultValue": "sc91rep"
+        },
+        "ReferenceDateSiteName": {
+            "Type": "String",
+            "Description": "The name of the certificate to be created.",
+            "DefaultValue": "sc91pro"
+        },
+        "IdentityServerSiteName": {
+            "Type": "String",
+            "Description": "The name of the certificate to be created.",
+            "DefaultValue": "sc91xcsearch"
+        },
+        "XP1MarketingAutomationSiteName": {
+            "Type": "String",
+            "Description": "The name of the certificate to be created.",
+            "DefaultValue": "sc91xccolsearch"
+        },
+        "XP1MarketingAutomationReportingSiteName": {
+            "Type": "String",
+            "Description": "The name of the certificate to be created.",
+            "DefaultValue": "sc91xdbrefdata"
+        },
+        "XP1ClientCertificateName": {
+            "Type": "String",
+            "Description": "The name of the certificate to be created.",
+            "DefaultValue": "sc91xdbautop"
+        },
+        "XP1CollectionSitename": {
+            "Type": "String",
+            "Description": "The name of the certificate to be created.",
+            "DefaultValue": "sc91xdbautop"
+        },
+        "XP1CollectionSearchSitename": {
+            "Type": "String",
+            "Description": "The name of the certificate to be created.",
+            "DefaultValue": "sc91xdbautrep"
+        },
+        "XP1CortexProcessingSitename": {
+            "Type": "String",
+            "Description": "The name of the certificate to be created.",
+            "DefaultValue": "sc91xdbautrep"
+        },
+        "XP1CortexReportingSitename": {
+            "Type": "String",
+            "Description": "The name of the certificate to be created.",
+            "DefaultValue": "sc91xdbautrep"
+        },
+        "CertPath": {
+            "Type": "String",
+            "Description": "The physical path on disk where certificates will be stored.",
+            "DefaultValue": ".\\certificates"
+        },
+        "RootCertFileName": {
+            "Type": "String",
+            "Description": "The file name of the root certificate to be created.",
+            "DefaultValue": "ROOT"
+        },
+        "ExportPassword": {
+            "Type": "String",
+            "Description": "Password to export certificates with.",
+            "DefaultValue": "1"
+        }
+    },
+    "Variables": {
+        "Root.Cert.DnsName": "[concat('SC-CA-', parameter('RootCertFileName'))]",
+        "Root.Cert.Store": "Cert:\\LocalMachine\\Root",
+        "Client.Cert.Store": "Cert:\\LocalMachine\\My",
+        "Export.Password": "[if(variable('User.Supplied.Password'),variable('Secure.Password'),variable('Convert.User.Password'))]",
+        "User.Supplied.Password": "[equal(parameter('ExportPassword'),'SIF-Default')]",
+        "Secure.Password": "[ConvertToSecureString(String:variable('Password.String'),AsPlainText:true,Force:true)]",
+        "Password.String": "[RandomString(Length:20,EnforceComplexity:True)]",
+        "Convert.User.Password": "[ConvertToSecureString(String:parameter('ExportPassword'),AsPlainText:true,Force:true)]"
+    },
+    "Register": {
+        "Tasks": {
+            "WriteInformation": "Write-Information"
+        },
+        "ConfigFunction": {
+            "ConvertToSecureString": "ConvertTo-SecureString"
+        }
+    },
+    "Tasks": {
+        "CreatePaths": {
+            "Description": "Create the physical disk path.",
+            "Type": "EnsurePath",
+            "Params": {
+                "Exists": [
+                    "[parameter('CertPath')]"
+                ]
+            }
+        },
+        "DisplayPassword": {
+            "Description": "Print password if the user hasn't supplied their own.",
+            "Type": "WriteInformation",
+            "Params": {
+                "Messagedata": "[concat('Certificate Password: ',variable('Password.String'))]",
+                "InformationAction": "Continue"
+            },
+            "Skip": "[not(variable('User.Supplied.Password'))]"
+        },
+        "CreateRootCert": {
+            "Description": "Create the root certificate.",
+            "Type": "NewRootCertificate",
+            "Params": {
+                "Path": "[parameter('CertPath')]",
+                "Name": "[parameter('RootCertFileName')]",
+                "DnsName": [
+                    "[variable('Root.Cert.DnsName')]",
+                    "127.0.0.1"
+                ],
+                "IncludePrivateKey": true,
+                "Password": "[variable('Export.Password')]"
+            }
+        },
+        "Solr": {
+            "Description": "Create a certificate signed by the root authority.",
+            "Type": "NewSignedCertificate",
+            "Params": {
+                "Signer": "[GetCertificate(variable('Root.Cert.DnsName'), variable('Root.Cert.Store'))]",
+                "Path": "[parameter('CertPath')]",
+                "CertStoreLocation": "[variable('Client.Cert.Store')]",
+                "Name": "[parameter('Solr')]",
+                "DnsName": [
+                    "[parameter('Solr')]",
+                    "127.0.0.1"
+                ],
+                "IncludePrivateKey": true,
+                "Password": "[variable('Export.Password')]"
+            }
+        },
+        "ContentDeliverySiteName": {
+            "Description": "Create a certificate signed by the root authority.",
+            "Type": "NewSignedCertificate",
+            "Params": {
+                "Signer": "[GetCertificate(variable('Root.Cert.DnsName'), variable('Root.Cert.Store'))]",
+                "Path": "[parameter('CertPath')]",
+                "CertStoreLocation": "[variable('Client.Cert.Store')]",
+                "Name": "[parameter('ContentDeliverySiteName')]",
+                "DnsName": [
+                    "[parameter('ContentDeliverySiteName')]",
+                    "127.0.0.1"
+                ],
+                "IncludePrivateKey": true,
+                "Password": "[variable('Export.Password')]"
+            }
+        },
+        "ContentManagementSiteName": {
+            "Description": "Create a certificate signed by the root authority.",
+            "Type": "NewSignedCertificate",
+            "Params": {
+                "Signer": "[GetCertificate(variable('Root.Cert.DnsName'), variable('Root.Cert.Store'))]",
+                "Path": "[parameter('CertPath')]",
+                "CertStoreLocation": "[variable('Client.Cert.Store')]",
+                "Name": "[parameter('ContentManagementSiteName')]",
+                "DnsName": [
+                    "[parameter('ContentManagementSiteName')]",
+                    "127.0.0.1"
+                ],
+                "IncludePrivateKey": true,
+                "Password": "[variable('Export.Password')]"
+            }
+        },
+        "ReportingSiteName": {
+            "Description": "Create a certificate signed by the root authority.",
+            "Type": "NewSignedCertificate",
+            "Params": {
+                "Signer": "[GetCertificate(variable('Root.Cert.DnsName'), variable('Root.Cert.Store'))]",
+                "Path": "[parameter('CertPath')]",
+                "CertStoreLocation": "[variable('Client.Cert.Store')]",
+                "Name": "[parameter('ReportingSiteName')]",
+                "DnsName": [
+                    "[parameter('ReportingSiteName')]",
+                    "127.0.0.1"
+                ],
+                "IncludePrivateKey": true,
+                "Password": "[variable('Export.Password')]"
+            }
+        },
+        "ProcessingSiteName": {
+            "Description": "Create a certificate signed by the root authority.",
+            "Type": "NewSignedCertificate",
+            "Params": {
+                "Signer": "[GetCertificate(variable('Root.Cert.DnsName'), variable('Root.Cert.Store'))]",
+                "Path": "[parameter('CertPath')]",
+                "CertStoreLocation": "[variable('Client.Cert.Store')]",
+                "Name": "[parameter('ProcessingSiteName')]",
+                "DnsName": [
+                    "[parameter('ProcessingSiteName')]",
+                    "127.0.0.1"
+                ],
+                "IncludePrivateKey": true,
+                "Password": "[variable('Export.Password')]"
+            }
+        },
+        "ReferenceDateSiteName": {
+            "Description": "Create a certificate signed by the root authority.",
+            "Type": "NewSignedCertificate",
+            "Params": {
+                "Signer": "[GetCertificate(variable('Root.Cert.DnsName'), variable('Root.Cert.Store'))]",
+                "Path": "[parameter('CertPath')]",
+                "CertStoreLocation": "[variable('Client.Cert.Store')]",
+                "Name": "[parameter('ReferenceDateSiteName')]",
+                "DnsName": [
+                    "[parameter('ReferenceDateSiteName')]",
+                    "127.0.0.1"
+                ],
+                "IncludePrivateKey": true,
+                "Password": "[variable('Export.Password')]"
+            }
+        },
+        "IdentityServerSiteName": {
+            "Description": "Create a certificate signed by the root authority.",
+            "Type": "NewSignedCertificate",
+            "Params": {
+                "Signer": "[GetCertificate(variable('Root.Cert.DnsName'), variable('Root.Cert.Store'))]",
+                "Path": "[parameter('CertPath')]",
+                "CertStoreLocation": "[variable('Client.Cert.Store')]",
+                "Name": "[parameter('IdentityServerSiteName')]",
+                "DnsName": [
+                    "[parameter('IdentityServerSiteName')]",
+                    "127.0.0.1"
+                ],
+                "IncludePrivateKey": true,
+                "Password": "[variable('Export.Password')]"
+            }
+        },
+        "XP1MarketingAutomationSiteName": {
+            "Description": "Create a certificate signed by the root authority.",
+            "Type": "NewSignedCertificate",
+            "Params": {
+                "Signer": "[GetCertificate(variable('Root.Cert.DnsName'), variable('Root.Cert.Store'))]",
+                "Path": "[parameter('CertPath')]",
+                "CertStoreLocation": "[variable('Client.Cert.Store')]",
+                "Name": "[parameter('XP1MarketingAutomationSiteName')]",
+                "DnsName": [
+                    "[parameter('XP1MarketingAutomationSiteName')]",
+                    "127.0.0.1"
+                ],
+                "IncludePrivateKey": true,
+                "Password": "[variable('Export.Password')]"
+            }
+        },
+        "XP1MarketingAutomationReportingSiteName": {
+            "Description": "Create a certificate signed by the root authority.",
+            "Type": "NewSignedCertificate",
+            "Params": {
+                "Signer": "[GetCertificate(variable('Root.Cert.DnsName'), variable('Root.Cert.Store'))]",
+                "Path": "[parameter('CertPath')]",
+                "CertStoreLocation": "[variable('Client.Cert.Store')]",
+                "Name": "[parameter('XP1MarketingAutomationReportingSiteName')]",
+                "DnsName": [
+                    "[parameter('XP1MarketingAutomationReportingSiteName')]",
+                    "127.0.0.1"
+                ],
+                "IncludePrivateKey": true,
+                "Password": "[variable('Export.Password')]"
+            }
+        },
+        "XP1ClientCertificateName": {
+            "Description": "Create a certificate signed by the root authority.",
+            "Type": "NewSignedCertificate",
+            "Params": {
+                "Signer": "[GetCertificate(variable('Root.Cert.DnsName'), variable('Root.Cert.Store'))]",
+                "Path": "[parameter('CertPath')]",
+                "CertStoreLocation": "[variable('Client.Cert.Store')]",
+                "Name": "[parameter('XP1ClientCertificateName')]",
+                "DnsName": [
+                    "[parameter('XP1ClientCertificateName')]",
+                    "127.0.0.1"
+                ],
+                "IncludePrivateKey": true,
+                "Password": "[variable('Export.Password')]"
+            }
+        },
+        "XP1CollectionSitename": {
+            "Description": "Create a certificate signed by the root authority.",
+            "Type": "NewSignedCertificate",
+            "Params": {
+                "Signer": "[GetCertificate(variable('Root.Cert.DnsName'), variable('Root.Cert.Store'))]",
+                "Path": "[parameter('CertPath')]",
+                "CertStoreLocation": "[variable('Client.Cert.Store')]",
+                "Name": "[parameter('XP1CollectionSitename')]",
+                "DnsName": [
+                    "[parameter('XP1CollectionSitename')]",
+                    "127.0.0.1"
+                ],
+                "IncludePrivateKey": true,
+                "Password": "[variable('Export.Password')]"
+            }
+        },
+        "XP1CollectionSearchSitename": {
+            "Description": "Create a certificate signed by the root authority.",
+            "Type": "NewSignedCertificate",
+            "Params": {
+                "Signer": "[GetCertificate(variable('Root.Cert.DnsName'), variable('Root.Cert.Store'))]",
+                "Path": "[parameter('CertPath')]",
+                "CertStoreLocation": "[variable('Client.Cert.Store')]",
+                "Name": "[parameter('XP1CollectionSearchSitename')]",
+                "DnsName": [
+                    "[parameter('XP1CollectionSearchSitename')]",
+                    "127.0.0.1"
+                ],
+                "IncludePrivateKey": true,
+                "Password": "[variable('Export.Password')]"
+            }
+        },
+        "XP1CortexProcessingSitename": {
+            "Description": "Create a certificate signed by the root authority.",
+            "Type": "NewSignedCertificate",
+            "Params": {
+                "Signer": "[GetCertificate(variable('Root.Cert.DnsName'), variable('Root.Cert.Store'))]",
+                "Path": "[parameter('CertPath')]",
+                "CertStoreLocation": "[variable('Client.Cert.Store')]",
+                "Name": "[parameter('XP1CortexProcessingSitename')]",
+                "DnsName": [
+                    "[parameter('XP1CortexProcessingSitename')]",
+                    "127.0.0.1"
+                ],
+                "IncludePrivateKey": true,
+                "Password": "[variable('Export.Password')]"
+            }
+        },
+        "XP1CortexReportingSitename": {
+            "Description": "Create a certificate signed by the root authority.",
+            "Type": "NewSignedCertificate",
+            "Params": {
+                "Signer": "[GetCertificate(variable('Root.Cert.DnsName'), variable('Root.Cert.Store'))]",
+                "Path": "[parameter('CertPath')]",
+                "CertStoreLocation": "[variable('Client.Cert.Store')]",
+                "Name": "[parameter('XP1CortexReportingSitename')]",
+                "DnsName": [
+                    "[parameter('XP1CortexReportingSitename')]",
+                    "127.0.0.1"
+                ],
+                "IncludePrivateKey": true,
+                "Password": "[variable('Export.Password')]"
+            }
+        }
+    }
+}

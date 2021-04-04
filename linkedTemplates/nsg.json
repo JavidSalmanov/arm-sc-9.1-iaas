@@ -1,0 +1,75 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "NSGName": {
+            "type": "string"
+        },
+        "nodeType": {
+            "type": "string"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "apiVersion": "2019-06-01",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[parameters('NSGName')]",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "[parameters('NSGName')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "condition": "[equals(parameters('nodeType'), 'cd')]",
+            "apiVersion": "2019-06-01",
+            "name": "[concat(parameters('NSGName'), '/WEB')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('NSGName'))]"
+            ],
+            "properties": {
+                "protocol": "TCP",
+                "sourcePortRange": "*",
+                "sourceAddressPrefix": "Internet",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 100,
+                "direction": "Inbound",
+                "sourcePortRanges": [],
+                "destinationPortRanges": [
+                    "80",
+                    "443"
+                ],
+                "sourceAddressPrefixes": [],
+                "destinationAddressPrefixes": [],
+                "destinationPortRange": null
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "condition": "[not(equals(parameters('nodeType'), 'cd'))]",
+            "apiVersion": "2019-06-01",
+            "name": "[concat(parameters('NSGName'), '/RDP')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('NSGName'))]"
+            ],
+            "properties": {
+                "protocol": "TCP",
+                "sourcePortRange": "*",
+                "sourceAddressPrefix": "Internet",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 100,
+                "direction": "Inbound",
+                "sourcePortRanges": [],
+                "destinationPortRanges": [
+                    "3389"
+                ],
+                "sourceAddressPrefixes": [],
+                "destinationAddressPrefixes": [],
+                "destinationPortRange": null
+            }
+        }
+    ]
+}

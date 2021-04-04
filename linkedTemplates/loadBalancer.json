@@ -1,0 +1,115 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "loadBalancerName": {
+            "defaultValue": "lb",
+            "type": "string"
+        },
+        "lbPip": {
+            "type": "string"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Network/loadBalancers",
+            "apiVersion": "2019-06-01",
+            "name": "[parameters('loadBalancerName')]",
+            "tags": {
+                "displayName": "LoadBalancer"
+            },
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Basic",
+                "tier": "Regional"
+            },
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "LoadBalancerFrontEnd",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',parameters('lbPip'))]"
+                            },
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "backend-pool",
+                        "properties": {}
+                    }
+                ],
+                "loadBalancingRules": [
+                    {
+                        "name": "http-rule",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName')), '/frontendIPConfigurations/LoadBalancerFrontEnd')]"
+                            },
+                            "frontendPort": 80,
+                            "backendPort": 80,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 4,
+                            "protocol": "Tcp",
+                            "enableTcpReset": false,
+                            "loadDistribution": "Default",
+                            "backendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName')), '/backendAddressPools/backend-pool')]"
+                            },
+                            "probe": {
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName')), '/probes/http-probe')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "https-rule",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName')), '/frontendIPConfigurations/LoadBalancerFrontEnd')]"
+                            },
+                            "frontendPort": 443,
+                            "backendPort": 443,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 4,
+                            "protocol": "Tcp",
+                            "enableTcpReset": false,
+                            "loadDistribution": "Default",
+                            "backendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName')), '/backendAddressPools/backend-pool')]"
+                            },
+                            "probe": {
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName')), '/probes/http-probe')]"
+                            }
+                        }
+                    }
+                ],
+                "probes": [
+                    {
+                        "name": "http-probe",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "port": 80,
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 2
+                        }
+                    },
+                    {
+                        "name": "https-probe",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "port": 443,
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 2
+                        }
+                    }
+                ],
+                "inboundNatRules": [],
+                "inboundNatPools": []
+            }
+        }
+    ]
+}

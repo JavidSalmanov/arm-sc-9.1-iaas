@@ -1,0 +1,29 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "availabilitySetName": {
+            "type": "string"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "name": "[parameters('availabilitySetName')]",
+            "type": "Microsoft.Compute/availabilitySets",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2018-04-01",
+            "dependsOn": [],
+            "tags": {
+              "displayName": "CDAvailabilitySet"
+            },
+            "properties": {
+              "platformUpdateDomainCount": 2,
+              "platformFaultDomainCount": 2
+            },
+            "sku": {
+              "name": "Aligned"
+            }
+          }
+    ]
+}

@@ -1,0 +1,63 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "sqlServerName": {
+            "type": "String"
+        },
+        "sqlServerAdmin": {
+            "type": "String"
+        },
+        "sqlServerAdminPassword": {
+            "type": "securestring"
+        },
+        "cdSubnetName": {
+            "type": "String"
+        },
+        "cmSubnetName": {
+            "type": "String"
+        },
+        "vnetName": {
+            "type": "String"
+        }
+    },
+    "variables": {
+        "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Sql/servers",
+            "apiVersion": "2015-05-01-preview",
+            "name": "[parameters('sqlServerName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "v12.0",
+            "properties": {
+                "administratorLogin": "[parameters('sqlServerAdmin')]",
+                "administratorLoginPassword": "[parameters('sqlServerAdminPassword')]",
+                "version": "12.0"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/virtualNetworkRules",
+            "apiVersion": "2015-05-01-preview",
+            "name": "[concat(parameters('sqlServerName'), '/',parameters('cdSubnetName'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('sqlServerName'))]"
+            ],
+            "properties": {
+                "virtualNetworkSubnetId": "[concat(variables('vnetId'), '/subnets/', parameters('cdSubnetName'))]"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/virtualNetworkRules",
+            "apiVersion": "2015-05-01-preview",
+            "name": "[concat(parameters('sqlServerName'), '/', parameters('cmSubnetName'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('sqlServerName'))]"
+            ],
+            "properties": {
+                "virtualNetworkSubnetId": "[concat(variables('vnetId'), '/subnets/',parameters('cmSubnetName'))]"
+            }
+        }
+    ]
+}

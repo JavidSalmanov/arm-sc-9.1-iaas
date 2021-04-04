@@ -1,0 +1,618 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "TemplateContainer": {
+      "type": "string",
+      "defaultValue": "linkedTemplates"
+    },
+    "NSGTemplateFileName": {
+      "type": "string",
+      "defaultValue": "nsg.json"
+    },
+    "VnetTemplateFileName": {
+      "type": "string",
+      "defaultValue": "vnet.json"
+    },
+    "lbTemplateFileName": {
+      "type": "string",
+      "defaultValue": "loadBalancer.json"
+    },
+    "setTemplateFileName": {
+      "type": "string",
+      "defaultValue": "availabilitySets.json"
+    },
+    "PipTemplateFileName": {
+      "type": "string",
+      "defaultValue": "pip.json"
+    },
+    "vmTemplateFileName": {
+      "type": "string",
+      "defaultValue": "vm.json"
+    },
+    "sql-paasTemplateFileName": {
+      "type": "string",
+      "defaultValue": "sql-paas.json"
+    },
+    "_artifactsLocation": {
+      "type": "string"
+    },
+    "_artifactsLocationSasToken": {
+      "type": "securestring"
+    },
+    "cdNSGName": {
+      "type": "string"
+    },
+    "cmNSGName": {
+      "type": "string"
+    },
+    "vnetName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "VnetPrefix": {
+      "type": "string"
+    },
+    "cdSubnetName": {
+      "type": "string"
+    },
+    "cdSubnetPrefix": {
+      "type": "string"
+    },
+    "cmSubnetName": {
+      "type": "string"
+    },
+    "cmSubnetPrefix": {
+      "type": "string"
+    },
+    "loadBalancerName": {
+      "type": "string"
+    },
+    "availabilitySetName": {
+      "type": "string"
+    },
+    "lbPipName": {
+      "type": "string"
+    },
+    "lbPipDNSName": {
+      "type": "string"
+    },
+    "cmvmName": {
+      "type": "string"
+    },
+    "cmprivateIPAddress": {
+      "type": "string"
+    },
+    "sqlprivateIPAddress": {
+      "type": "string"
+    },
+    "cmvmPIP": {
+      "type": "string"
+    },
+    "cmvmDNSPIP": {
+      "type": "string"
+    },
+    "AdminUsername": {
+      "type": "string"
+    },
+    "AdminPassword": {
+      "type": "string"
+    },
+    "cmvmSize": {
+      "type": "string",
+      "defaultValue": "Standard_F4s"
+    },
+    "cmvmScriptScriptFileName": {
+      "type": "string"
+    },
+    "solrvmName": {
+      "type": "string"
+    },
+    "solrprivateIPAddress": {
+      "type": "string"
+    },
+    "solrvmScriptScriptFileName": {
+      "type": "string"
+    },
+    "cdvmScriptScriptFileName": {
+      "type": "string"
+    },
+    "cdvmName": {
+      "type": "string"
+    },
+    "cdNodeCount": {
+      "type": "int"
+    },
+    "cdprivateIPAddress": {
+      "type": "string"
+    },
+    "sqlServerName": {
+      "type": "string"
+    },
+    "SqlAdminUser": {
+      "type": "string"
+    },
+    "sqlType": {
+      "type": "string"
+    },
+    "SqlAdminPassword": {
+      "type": "securestring"
+    },
+    "SqlvmAdminPassword": {
+      "type": "securestring"
+    }
+  },
+  "variables": {
+    "NSGTemplate": "[concat(parameters('_artifactsLocation'), '/', parameters('TemplateContainer'), '/' , parameters('NSGTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+    "vnetTemplate": "[concat(parameters('_artifactsLocation'), '/', parameters('TemplateContainer'), '/' , parameters('VnetTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+    "lbTemplate": "[concat(parameters('_artifactsLocation'), '/', parameters('TemplateContainer'), '/' , parameters('lbTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+    "setTemplate": "[concat(parameters('_artifactsLocation'), '/', parameters('TemplateContainer'), '/' , parameters('setTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+    "pipTemplate": "[concat(parameters('_artifactsLocation'), '/', parameters('TemplateContainer'), '/' , parameters('PipTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+    "vmTemplate": "[concat(parameters('_artifactsLocation'), '/', parameters('TemplateContainer'), '/' , parameters('vmTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+    "sql-paasTemplate": "[concat(parameters('_artifactsLocation'), '/', parameters('TemplateContainer'), '/' , parameters('sql-paasTemplateFileName'), parameters('_artifactsLocationSasToken'))]"
+  },
+  "resources": [
+    {
+      "name": "[parameters('cmNSGName')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('NSGTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "NSGName": {
+            "value": "[parameters('cmNSGName')]"
+          },
+          "nodeType": {
+            "value": "cm"
+          }
+        }
+      }
+    },
+    {
+      "name": "[parameters('cdNSGName')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('NSGTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "NSGName": {
+            "value": "[parameters('cdNSGName')]"
+          },
+          "nodeType": {
+            "value": "cd"
+          }
+        }
+      }
+    },
+    {
+      "name": "[parameters('vnetName')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "dependsOn": [
+        "[parameters('cdNSGName')]",
+        "[parameters('cmNSGName')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('vnetTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "vnetName": {
+            "value": "[parameters('vnetName')]"
+          },
+          "VnetPrefix": {
+            "value": "[parameters('VnetPrefix')]"
+          },
+          "cdSubnetName": {
+            "value": "[parameters('cdSubnetName')]"
+          },
+          "cdSubnetPrefix": {
+            "value": "[parameters('cdSubnetPrefix')]"
+          },
+          "cmSubnetName": {
+            "value": "[parameters('cmSubnetName')]"
+          },
+          "cmSubnetPrefix": {
+            "value": "[parameters('cmSubnetPrefix')]"
+          },
+          "cdNSGName": {
+            "value": "[parameters('cdNSGName')]"
+          },
+          "cmNSGName": {
+            "value": "[parameters('cmNSGName')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('sqlServerName'),'PaaS')]",
+      "condition": "[equals(parameters('sqlType'),'PaaS')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "dependsOn": [
+        "[parameters('vnetName')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('sql-paasTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "sqlServerName": {
+            "value": "[parameters('sqlServerName')]"
+          },
+          "sqlServerAdmin": {
+            "value": "[parameters('SqlAdminUser')]"
+          },
+          "sqlServerAdminPassword": {
+            "value": "[parameters('SqlAdminPassword')]"
+          },
+          "cdSubnetName": {
+            "value": "[parameters('cdSubnetName')]"
+          },
+          "cmSubnetName": {
+            "value": "[parameters('cmSubnetName')]"
+          },
+          "vnetName": {
+            "value": "[parameters('vnetName')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('sqlServerName'),'IaaS')]",
+      "condition": "[equals(parameters('sqlType'),'IaaS')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "dependsOn": [
+        "[parameters('vnetName')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('vmTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "vmName": {
+            "value": "[parameters('sqlServerName')]"
+          },
+          "privateIPAddress": {
+            "value": "[parameters('sqlprivateIPAddress')]"
+          },
+          "vmPIP": {
+            "value": "[parameters('cmvmPIP')]"
+          },
+          "vnetName": {
+            "value": "[parameters('vnetName')]"
+          },
+          "subnetName": {
+            "value": "[parameters('cmSubnetName')]"
+          },
+          "AdminUsername": {
+            "value": "[parameters('SqlAdminUser')]"
+          },
+          "AdminPassword": {
+            "value": "[parameters('SqlvmAdminPassword')]"
+          },
+          "vmSize": {
+            "value": "[parameters('cmvmSize')]"
+          },
+          "vmScriptScriptFileName": {
+            "value": "sql.ps1"
+          },
+          "scPackage": {
+            "value": "sc.zip"
+          },
+          "nodeType": {
+            "value": "sql"
+          },
+          "loadBalancerName": {
+            "value": "[parameters('loadBalancerName')]"
+          },
+          "availabilitySetName": {
+            "value": "[parameters('availabilitySetName')]"
+          },
+          "_artifactsLocation": {
+            "value": "[parameters('_artifactsLocation')]"
+          },
+          "_artifactsLocationSasToken": {
+            "value": "[parameters('_artifactsLocationSasToken')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "[parameters('lbPipName')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('pipTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "publicIPAddressesName": {
+            "value": "[parameters('lbPipName')]"
+          },
+          "publicIPAddressesDNSName": {
+            "value": "[parameters('lbPipDNSName')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "[parameters('cmvmPIP')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('pipTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "publicIPAddressesName": {
+            "value": "[parameters('cmvmPIP')]"
+          },
+          "publicIPAddressesDNSName": {
+            "value": "[parameters('cmvmDNSPIP')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "[parameters('loadBalancerName')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "dependsOn": [
+        "[parameters('lbPipName')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('lbTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "loadBalancerName": {
+            "value": "[parameters('loadBalancerName')]"
+          },
+          "lbPip": {
+            "value": "[parameters('lbPipName')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "[parameters('availabilitySetName')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "dependsOn": [
+        "[parameters('lbPipName')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('setTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "availabilitySetName": {
+            "value": "[parameters('availabilitySetName')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "[parameters('cmvmName')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "dependsOn": [
+        "[parameters('vnetName')]",
+        "[parameters('cmvmPIP')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('vmTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "vmName": {
+            "value": "[parameters('cmvmName')]"
+          },
+          "privateIPAddress": {
+            "value": "[parameters('cmprivateIPAddress')]"
+          },
+          "vmPIP": {
+            "value": "[parameters('cmvmPIP')]"
+          },
+          "vnetName": {
+            "value": "[parameters('vnetName')]"
+          },
+          "subnetName": {
+            "value": "[parameters('cmSubnetName')]"
+          },
+          "AdminUsername": {
+            "value": "[parameters('AdminUsername')]"
+          },
+          "AdminPassword": {
+            "value": "[parameters('AdminPassword')]"
+          },
+          "vmSize": {
+            "value": "[parameters('cmvmSize')]"
+          },
+          "vmScriptScriptFileName": {
+            "value": "[parameters('cmvmScriptScriptFileName')]"
+          },
+          "scPackage": {
+            "value": "sc.zip"
+          },
+          "nodeType": {
+            "value": "cm"
+          },
+          "loadBalancerName": {
+            "value": "[parameters('loadBalancerName')]"
+          },
+          "availabilitySetName": {
+            "value": "[parameters('availabilitySetName')]"
+          },
+          "_artifactsLocation": {
+            "value": "[parameters('_artifactsLocation')]"
+          },
+          "_artifactsLocationSasToken": {
+            "value": "[parameters('_artifactsLocationSasToken')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "[parameters('solrvmName')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "dependsOn": [
+        "[parameters('vnetName')]",
+        "[parameters('cmvmPIP')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('vmTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "vmName": {
+            "value": "[parameters('solrvmName')]"
+          },
+          "privateIPAddress": {
+            "value": "[parameters('solrprivateIPAddress')]"
+          },
+          "vmPIP": {
+            "value": "[parameters('cmvmPIP')]"
+          },
+          "vnetName": {
+            "value": "[parameters('vnetName')]"
+          },
+          "subnetName": {
+            "value": "[parameters('cmSubnetName')]"
+          },
+          "AdminUsername": {
+            "value": "[parameters('AdminUsername')]"
+          },
+          "AdminPassword": {
+            "value": "[parameters('AdminPassword')]"
+          },
+          "vmSize": {
+            "value": "[parameters('cmvmSize')]"
+          },
+          "vmScriptScriptFileName": {
+            "value": "[parameters('solrvmScriptScriptFileName')]"
+          },
+          "scPackage": {
+            "value": "sc.zip"
+          },
+          "nodeType": {
+            "value": "solr"
+          },
+          "loadBalancerName": {
+            "value": "[parameters('loadBalancerName')]"
+          },
+          "availabilitySetName": {
+            "value": "[parameters('availabilitySetName')]"
+          },
+          "_artifactsLocation": {
+            "value": "[parameters('_artifactsLocation')]"
+          },
+          "_artifactsLocationSasToken": {
+            "value": "[parameters('_artifactsLocationSasToken')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('cdvmName'), copyIndex(1))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "dependsOn": [
+        "[parameters('vnetName')]",
+        "[parameters('availabilitySetName')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('vmTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "vmName": {
+            "value": "[concat(parameters('cdvmName'), copyIndex(1))]"
+          },
+          "privateIPAddress": {
+            "value": "[concat(parameters('cdprivateIPAddress'), copyIndex(10))]"
+          },
+          "vmPIP": {
+            "value": "[parameters('cmvmPIP')]"
+          },
+          "vnetName": {
+            "value": "[parameters('vnetName')]"
+          },
+          "subnetName": {
+            "value": "[parameters('cdSubnetName')]"
+          },
+          "AdminUsername": {
+            "value": "[parameters('AdminUsername')]"
+          },
+          "AdminPassword": {
+            "value": "[parameters('AdminPassword')]"
+          },
+          "vmSize": {
+            "value": "[parameters('cmvmSize')]"
+          },
+          "vmScriptScriptFileName": {
+            "value": "[parameters('cdvmScriptScriptFileName')]"
+          },
+          "scPackage": {
+            "value": "sc.zip"
+          },
+          "nodeType": {
+            "value": "cd"
+          },
+          "loadBalancerName": {
+            "value": "[parameters('loadBalancerName')]"
+          },
+          "availabilitySetName": {
+            "value": "[parameters('availabilitySetName')]"
+          },
+          "_artifactsLocation": {
+            "value": "[parameters('_artifactsLocation')]"
+          },
+          "_artifactsLocationSasToken": {
+            "value": "[parameters('_artifactsLocationSasToken')]"
+          }
+        }
+      },
+      "copy": {
+        "name": "cdcopy",
+        "count": "[parameters('cdNodeCount')]"
+      }
+    }
+  ],
+  "outputs": {}
+}

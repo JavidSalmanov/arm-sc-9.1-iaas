@@ -1,0 +1,95 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vnetName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "VnetPrefix": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cdSubnetName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cdSubnetPrefix": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cmSubnetName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cmSubnetPrefix": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cdNSGName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cmNSGName": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "name": "[parameters('vnetName')]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2019-02-01",
+      "dependsOn": [],
+      "tags": {
+        "displayName": "[parameters('vnetName')]"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('VnetPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[parameters('cdSubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('cdSubnetPrefix')]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('cdNSGName'))]"
+              },
+              "serviceEndpoints": [
+                {
+                  "service": "Microsoft.Sql",
+                  "locations": [
+                    "[resourceGroup().location]"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "[parameters('cmSubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('cmSubnetPrefix')]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('cmNSGName'))]"
+              },
+              "serviceEndpoints": [
+                {
+                  "service": "Microsoft.Sql",
+                  "locations": [
+                    "[resourceGroup().location]"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {}
+}

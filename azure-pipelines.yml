@@ -1,0 +1,40 @@
+trigger: 
+  branches:
+    include:
+    - master
+variables:
+- group: env-vars
+- group: secret-vars
+stages:
+- stage: PROD
+  jobs:
+    # track deployments on the environment
+  - deployment: DEV
+    pool:
+      vmImage: 'vs2017-win2016'
+    # creates an environment if it doesn’t exist
+    environment: 'DEV'
+    strategy:
+      # default deployment strategy
+      runOnce:
+        deploy:
+          steps:
+          - task: PowerShell@2
+            inputs:
+              filePath: 'Check-DSCModules.ps1'
+          - task: replacetokens@3
+            inputs:
+              targetFiles: '**/*.psd1'
+              encoding: 'auto'
+              writeBOM: true
+              actionOnMissing: 'warn'
+              keepToken: false
+              tokenPrefix: '#{'
+              tokenSuffix: '}#'
+          - task: AzurePowerShell@3
+            inputs:
+              azureSubscription: 'AVASC'
+              ScriptType: 'FilePath'
+              ScriptPath: 'New-AzureResourceGroup.ps1'
+              ScriptArguments: '-UploadArtifacts'
+              azurePowerShellVersion: 'LatestVersion'
